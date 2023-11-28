@@ -11,6 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "clientes")
@@ -19,9 +22,14 @@ public class Cliente implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotEmpty
     private String nombre;
+    @NotEmpty
     private String apellido;
+    @NotEmpty
+    @Email
     private String email;
+    @NotNull
     @Column(name = "created_at")
     @Temporal(TemporalType.DATE)
     private Date createdAt;
