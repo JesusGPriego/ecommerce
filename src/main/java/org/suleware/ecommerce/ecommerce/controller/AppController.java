@@ -10,11 +10,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
-import org.suleware.ecommerce.ecommerce.models.dao.IClienteDao;
 import org.suleware.ecommerce.ecommerce.models.entity.Cliente;
+import org.suleware.ecommerce.ecommerce.models.service.IClienteService;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,12 +23,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AppController {
 
     @Autowired
-    private IClienteDao clienteDao;
+    private IClienteService clienteService;
 
     @GetMapping(value = "/listar")
     public String listar(Model model) {
         model.addAttribute("titulo", "Lista de clientes");
-        List<Cliente> clientes = clienteDao.findAll();
+        List<Cliente> clientes = clienteService.findAll();
         model.addAttribute("clientes", clientes);
         return "listar";
     }
@@ -53,7 +52,7 @@ public class AppController {
             return "form";
         }
 
-        clienteDao.save(cliente);
+        clienteService.save(cliente);
         status.setComplete();
         return "redirect:/listar";
     }
@@ -62,7 +61,7 @@ public class AppController {
     public String editar(@PathVariable(value = "id") Long id, Model model) {
         Cliente cliente = null;
         if (id > 0) {
-            cliente = clienteDao.findOne(id);
+            cliente = clienteService.findOne(id);
         } else {
             return "listar";
         }
@@ -73,7 +72,7 @@ public class AppController {
     @GetMapping(value = "/eliminar")
     public String getMethodName(@RequestParam(value = "id") Long id) {
         if (id > 0) {
-            clienteDao.delete(id);
+            clienteService.delete(id);
         }
         return "redirect:/listar";
     }
