@@ -1,7 +1,9 @@
 package org.suleware.ecommerce.ecommerce.controller;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.suleware.ecommerce.ecommerce.models.entity.Cliente;
 import org.suleware.ecommerce.ecommerce.models.service.IClienteService;
@@ -58,7 +61,9 @@ public class AppController {
     }
 
     @PostMapping("/form")
-    public String guardar(@Valid Cliente cliente, BindingResult result, Model model, RedirectAttributes flash,
+    public String guardar(@Valid Cliente cliente, BindingResult result, Model model,
+            @RequestParam("file") MultipartFile foto,
+            RedirectAttributes flash,
             SessionStatus status) {
 
         if (result.hasErrors()) {
@@ -66,10 +71,25 @@ public class AppController {
             return "form";
         }
 
+        if (!foto.isEmpty()) {
+            Path uploads = Paths.get("src//main//static//uploads");
+            String rootPath = uploads.toFile().getAbsolutePath();
+            try {
+                byte[] bytes = foto.getBytes();
+                Path rutaCompleta = Paths.get(rootPath + "//" + foto.getOriginalFilename());
+                Files.write(rutaCompleta, bytes);
+                flash.addFlashAttribute("info", "Subido correctamente " + foto.getOriginalFilename());
+                cliente.setFoto(foto.getOriginalFilename());
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.getMessage();
+            }
+        }
+
         clienteService.save(cliente);
         status.setComplete();
         flash.addFlashAttribute("success", "Cliente creado con éxito");
-        return "redirect:/listar/1";
+        return "redirect:/listar";
     }
 
     @GetMapping("/form/{id}")
@@ -79,7 +99,7 @@ public class AppController {
             cliente = clienteService.findOne(id);
             if (cliente == null) {
                 flash.addFlashAttribute("error", "El cliente no existe");
-                return "redirect:/listar/1";
+                return "redirect:/listar";
             }
         } else {
             flash.addFlashAttribute("error", "Id de cliente no válido");
@@ -89,13 +109,15 @@ public class AppController {
         return "form";
     }
 
-    @GetMapping(value = "/eliminar")
-    public String getMethodName(@RequestParam(value = "id") Long id, RedirectAttributes flash) {
+    @GetMapping(value = "/eliminar/{id}")
+    public String getMethodName(@PathVariable(value = "id") Long id, RedirectAttributes flash) {
         if (id > 0) {
-            clienteService.delete(id);
-            flash.addFlashAttribute("success", "El cliente ha sido eliminado con éxito");
-        }
-        return "redirect:/listar/1";
-    }
+            Cliente cliente = clienteService.findOne(id);
 
+            clienteService.delete(id);
+            flash.addFlashAttribute("success", "Cliente eliminado con éxito!");
+
+        }
+        return "redirect:/listar";
+    }
 }
