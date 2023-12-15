@@ -18,6 +18,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.suleware.ecommerce.ecommerce.models.entity.Cliente;
 import org.suleware.ecommerce.ecommerce.models.service.IClienteService;
+import org.suleware.ecommerce.ecommerce.util.paginator.PageRender;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,19 +30,19 @@ public class AppController {
     @Autowired
     private IClienteService clienteService;
 
-    @GetMapping(value = "/listar/{pageNo}")
-    public String listar(@PathVariable(name = "pageNo") int pageNo, Model model) {
-        int pageSize = 5;
-        Page<Cliente> page = clienteService.findAll(pageNo, pageSize);
+    @GetMapping(value = "/listar")
+    public String listar(@RequestParam(name = "page", defaultValue = "0") int pageNo, Model model) {
 
-        List<Cliente> listCliente = page.getContent();
+        Pageable pageable = PageRequest.of(pageNo, 4);
+
+        Page<Cliente> clientes = clienteService.findAll(pageable);
+
+        PageRender<Cliente> pageRender = new PageRender<>("/listar", clientes);
 
         // Pasamos dato/info a la vista con model:
         model.addAttribute("titulo", "Listado de clientes:");
-        model.addAttribute("currentPage", pageNo);
-        model.addAttribute("totalPages", page.getTotalPages());
-        model.addAttribute("totalItems", page.getTotalElements());
-        model.addAttribute("clientes", listCliente);
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("page", pageRender);
         return "listar";
     }
 

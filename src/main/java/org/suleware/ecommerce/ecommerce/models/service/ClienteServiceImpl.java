@@ -25,11 +25,7 @@ public class ClienteServiceImpl implements IClienteService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Cliente> findAll(int pageNo, int pageSize) {
-        // Creamos el paginador:
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-
-        // Devolvemos un listado de cliente paginados segun el paginador:
+    public Page<Cliente> findAll(Pageable pageable) {
         return clienteDao.findAll(pageable);
     }
 
